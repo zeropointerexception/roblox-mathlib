@@ -2,9 +2,7 @@ Roblox Math Lib
 
 A mathematics library for Roblox that extends the built-in math functions.
 
-https://img.shields.io/badge/Lua-2C2D72?style=for-the-badge&logo=lua&logoColor=white
-https://img.shields.io/badge/Roblox-00A2FF?style=for-the-badge&logo=roblox&logoColor=white
-https://img.shields.io/badge/License-MIT-green?style=for-the-badge
+<p align="center"> <img src="https://img.shields.io/badge/Lua-2C2D72?style=flat&logo=lua&logoColor=white" alt="Lua"> <img src="https://img.shields.io/badge/Roblox-00A2FF?style=flat&logo=roblox&logoColor=white" alt="Roblox"> <img src="https://img.shields.io/badge/License-MIT-green?style=flat" alt="License"> <img src="https://img.shields.io/badge/Version-2.1.0-blue?style=flat" alt="Version"> </p>
 Features
 
     Noise Generation: Perlin noise (1D, 2D, 3D) with Fractional Brownian Motion (fBm)
