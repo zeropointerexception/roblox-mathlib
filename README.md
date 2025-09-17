@@ -216,11 +216,11 @@ Contributing
 
     Fork the project
 
-    Create your feature branch (git checkout -b feature/AmazingFeature)
+    Create your feature branch (git checkout -b feature/somenewfeature)
 
-    Commit your changes (git commit -m 'Add some AmazingFeature')
+    Commit your changes (git commit -m 'Add some somenewfeature')
 
-    Push to the branch (git push origin feature/AmazingFeature)
+    Push to the branch (git push origin feature/somenewfeature)
 
     Open a Pull Request
 
@@ -235,3 +235,4 @@ Acknowledgments
 Support
 
 If you have any questions or issues, please open an issue on GitHub or contact me directly.
+Discord: .schlonny
