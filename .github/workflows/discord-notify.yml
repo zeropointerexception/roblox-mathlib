@@ -1,6 +1,6 @@
 name: Discord Notification on Push
 
-on: 
+on:
   push:
   workflow_dispatch:
 
@@ -8,9 +8,28 @@ jobs:
   discord-notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Send to Discord
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Get push statistics
+        id: stats
+        run: |
+          CURRENT_TIME=$(date -u +"%Y-%m-%d %H:%M:%S CET")
+          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+
+          PUSHES_LAST_24H=$(git log --oneline --since="24 hours ago" --author="${{ github.actor }}" | wc -l)
+          echo "pushes_last_24h=$PUSHES_LAST_24H" >> $GITHUB_OUTPUT
+
+          TOTAL_PUSHES=$(git log --oneline --author="${{ github.actor }}" | wc -l)
+          echo "total_pushes=$TOTAL_PUSHES" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
-          -d '{"content": "New push to **${{ github.repository }}** by @${{ github.actor }}\n📝 **Commit:** ${{ github.event.head_commit.message }}\n🔗 **View changes:** ${{ github.event.compare }}"}' \
-          ${{ secrets.DISCORD_WEBHOOK }}
+          -d '{
+            "content": " **New Push Notification**\n\n**Repository:** ${{ github.repository }}\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.stats.outputs.current_time }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**Changes:** ${{ github.event.compare }}\n\n**User Statistics:**\n• Pushes in last 24h: ${{ steps.stats.outputs.pushes_last_24h }}\n• Total pushes: ${{ steps.stats.outputs.total_pushes }}"
+          }' \
+          "${{ secrets.DISCORD_WEBHOOK }}"
