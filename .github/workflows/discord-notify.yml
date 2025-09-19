@@ -16,7 +16,7 @@ jobs:
       - name: Get push statistics
         id: stats
         run: |
-          CURRENT_TIME=$(date -u +"%Y-%m-%d %H:%M:%S CET")
+          CURRENT_TIME=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
 
           PUSHES_LAST_24H=$(git log --oneline --since="24 hours ago" --author="${{ github.actor }}" | wc -l)
