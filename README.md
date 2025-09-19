@@ -1,3 +1,10 @@
+<!--
+meta property="og:title" content="Schlonny's Luau Math Library"
+meta property="og:description" content="a Mathematics Library for Roblox that extends the built-in math functions, featuring vectors, matrices, curves, and other essential utilities."
+meta property="og:image" content="https://raw.githubusercontent.com/zeropointerexception/roblox-mathlib/refs/heads/main/repoimage.jpg"
+meta property="og:url" content="https://github.com/zeropointerexception/roblox-mathlib"
+meta name="twitter:card" content="summary_large_image"
+-->
 Roblox Math Lib
 
 A mathematics library for Roblox that extends the built-in math functions.
