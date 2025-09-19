@@ -8,7 +8,7 @@
     
     Advanced Mathematics Library for Roblox
     Created by .schlonny
-    Version: 2.1.1
+    Version: 2.1.0
     License: MIT
     Github: https://github.com/zeropointerexception/roblox-mathlib
     
@@ -19,8 +19,6 @@
     • Geometric calculations
     • Statistical functions
     • Custom random generators
-    • Mersenne Twister 
-    • Shuffles using Fisher-Yates algorithm
 ]]--
 
 local mathlib = {}
@@ -133,18 +131,18 @@ local permutation = {
 	138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 }
 
--- Double permutation for wrapping
+-- Double permutation table for wrapping
 local p = {}
 for i = 0, 511 do
 	p[i] = permutation[(i % 256) + 1]
 end
 
--- for smooth interpolation
+-- Fade function for smooth interpolation
 local function fade(t)
 	return t * t * t * (t * (t * 6 - 15) + 10)
 end
 
--- Gradient func for Perlin noise
+-- Gradient function for Perlin noise
 local function grad(hash, x, y, z)
 	local h = hash % 16
 	local u = h < 8 and x or y
@@ -194,7 +192,7 @@ function mathlib.perlinNoise2D(x, y)
 	return mathlib.perlinNoise3D(x, y, 0)
 end
 
---- Generates 1D Perlin noise 
+--- Generates 1D Perlin noise
 --- @param x number Coordinate
 --- @return number Noise value (-1 to 1)
 function mathlib.perlinNoise1D(x)
@@ -228,168 +226,6 @@ function mathlib.fbm(x, y, z, octaves, persistence, lacunarity)
 
 	return total / maxValue
 end
-
---***-- Simplex Noise --***--
-
-local simplex_gradients = {
-	{1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0},
-	{1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1},
-	{0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}
-}
-
--- Simplex permutation table
-local simplex_perm = {}
-for i = 0, 511 do
-	simplex_perm[i] = p[i % 256]
-end
-
-local F3 = 1.0 / 3.0
-local G3 = 1.0 / 6.0
-
---- 3D Simplex Noise
---- @param x number X coordinate
---- @param y number Y coordinate
---- @param z number Z coordinate
---- @return number Noise value (-1 to 1)
-function mathlib.simplexNoise3D(x, y, z)
-
-	local s = (x + y + z) * F3
-	local i = math.floor(x + s)
-	local j = math.floor(y + s)
-	local k = math.floor(z + s)
-
-	local t = (i + j + k) * G3
-	local X0 = i - t
-	local Y0 = j - t
-	local Z0 = k - t
-	local x0 = x - X0
-	local y0 = y - Y0
-	local z0 = z - Z0
-
-   --current simplex
-	local i1, j1, k1, i2, j2, k2
-	if x0 >= y0 then
-		if y0 >= z0 then
-			i1, j1, k1, i2, j2, k2 = 1, 0, 0, 1, 1, 0
-		elseif x0 >= z0 then
-			i1, j1, k1, i2, j2, k2 = 1, 0, 0, 1, 0, 1
-		else
-			i1, j1, k1, i2, j2, k2 = 0, 0, 1, 1, 0, 1
-		end
-	else
-		if y0 < z0 then
-			i1, j1, k1, i2, j2, k2 = 0, 0, 1, 0, 1, 1
-		elseif x0 < z0 then
-			i1, j1, k1, i2, j2, k2 = 0, 1, 0, 0, 1, 1
-		else
-			i1, j1, k1, i2, j2, k2 = 0, 1, 0, 1, 1, 0
-		end
-	end
-
-	local x1 = x0 - i1 + G3
-	local y1 = y0 - j1 + G3
-	local z1 = z0 - k1 + G3
-
-	local x2 = x0 - i2 + 2.0 * G3
-	local y2 = y0 - j2 + 2.0 * G3
-	local z2 = z0 - k2 + 2.0 * G3
-
-	local x3 = x0 - 1.0 + 3.0 * G3
-	local y3 = y0 - 1.0 + 3.0 * G3
-	local z3 = z0 - 1.0 + 3.0 * G3
-
-	local ii = i % 255
-	local jj = j % 255
-	local kk = k % 255
-
-	local gi0 = simplex_perm[ii + simplex_perm[jj + simplex_perm[kk]]] % 12
-	local gi1 = simplex_perm[ii + i1 + simplex_perm[jj + j1 + simplex_perm[kk + k1]]] % 12
-	local gi2 = simplex_perm[ii + i2 + simplex_perm[jj + j2 + simplex_perm[kk + k2]]] % 12
-	local gi3 = simplex_perm[ii + 1 + simplex_perm[jj + 1 + simplex_perm[kk + 1]]] % 12
-
-	local t0 = 0.6 - x0*x0 - y0*y0 - z0*z0
-	local n0 = t0 < 0 and 0 or t0*t0*t0*t0 * mathlib.dot(
-		simplex_gradients[gi0+1][1], simplex_gradients[gi0+1][2], simplex_gradients[gi0+1][3],
-		x0, y0, z0
-	)
-
-	local t1 = 0.6 - x1*x1 - y1*y1 - z1*z1
-	local n1 = t1 < 0 and 0 or t1*t1*t1*t1 * mathlib.dot(
-		simplex_gradients[gi1+1][1], simplex_gradients[gi1+1][2], simplex_gradients[gi1+1][3],
-		x1, y1, z1
-	)
-
-	local t2 = 0.6 - x2*x2 - y2*y2 - z2*z2
-	local n2 = t2 < 0 and 0 or t2*t2*t2*t2 * mathlib.dot(
-		simplex_gradients[gi2+1][1], simplex_gradients[gi2+1][2], simplex_gradients[gi2+1][3],
-		x2, y2, z2
-	)
-
-	local t3 = 0.6 - x3*x3 - y3*y3 - z3*z3
-	local n3 = t3 < 0 and 0 or t3*t3*t3*t3 * mathlib.dot(
-		simplex_gradients[gi3+1][1], simplex_gradients[gi3+1][2], simplex_gradients[gi3+1][3],
-		x3, y3, z3
-	)
-
-	return 32.0 * (n0 + n1 + n2 + n3)
-end
-
---- 2D Simplex Noise
---- @param x number X coordinate
---- @param y number Y coordinate
---- @return number Noise value (-1 to 1)
-function mathlib.simplexNoise2D(x, y)
-	local s = (x + y) * 0.366025403784439  -- F2 = (sqrt(3)-1)/2
-	local i = math.floor(x + s)
-	local j = math.floor(y + s)
-
-	local t = (i + j) * 0.211324865405187  -- G2 = (3-sqrt(3))/6
-	local X0 = i - t
-	local Y0 = j - t
-	local x0 = x - X0
-	local y0 = y - Y0
-
-	local i1, j1 --current simplex
-	if x0 > y0 then
-		i1, j1 = 1, 0  -- Lower triangl, XY order
-	else
-		i1, j1 = 0, 1  -- Upper triangle YX order
-	end
-
-	local x1 = x0 - i1 + 0.211324865405187
-	local y1 = y0 - j1 + 0.211324865405187
-
-	local x2 = x0 - 0.577350269189626  -- 1.0 - 2.0 * G2
-	local y2 = y0 - 0.577350269189626
-
-	local ii = i % 255
-	local jj = j % 255
-
-	local gi0 = simplex_perm[ii + simplex_perm[jj]] % 12
-	local gi1 = simplex_perm[ii + i1 + simplex_perm[jj + j1]] % 12
-	local gi2 = simplex_perm[ii + 1 + simplex_perm[jj + 1]] % 12
-
-	local t0 = 0.5 - x0*x0 - y0*y0
-	local n0 = t0 < 0 and 0 or t0*t0 * t0*t0 * mathlib.dot(
-		simplex_gradients[gi0+1][1], simplex_gradients[gi0+1][2], 0,
-		x0, y0, 0
-	)
-
-	local t1 = 0.5 - x1*x1 - y1*y1
-	local n1 = t1 < 0 and 0 or t1*t1 * t1*t1 * mathlib.dot(
-		simplex_gradients[gi1+1][1], simplex_gradients[gi1+1][2], 0,
-		x1, y1, 0
-	)
-
-	local t2 = 0.5 - x2*x2 - y2*y2
-	local n2 = t2 < 0 and 0 or t2*t2 * t2*t2 * mathlib.dot(
-		simplex_gradients[gi2+1][1], simplex_gradients[gi2+1][2], 0,
-		x2, y2, 0
-	)
-
-	return 70.0 * (n0 + n1 + n2)
-end
-
 
 --[[
     ========================================
@@ -615,138 +451,7 @@ end
 
 --[[
     ========================================
-    MERSENNE TWISTER RANDOM GENERATOR 
-    ========================================
-]]--
-
--- Mersenne Twister state
-local mtState = {
-	index = 625,
-	mt = {},
-	initialized = false
-}
-
--- Initialize the Mersenne Twister
-local function initializeMT(seed)
-	seed = seed or (tick() * 1000) % 2147483647
-
-	mtState.mt[1] = seed
-	for i = 2, 624 do
-		local prev = mtState.mt[i-1]
-		local xor = bit32.bxor(prev, bit32.rshift(prev, 30))
-		mtState.mt[i] = (1812433253 * xor + i) % 4294967296
-	end
-
-	mtState.index = 625
-	mtState.initialized = true
-end
-
--- Generate random numbers
-local function generateMTNumbers()
-	for i = 1, 624 do
-		local y = bit32.bor(
-			bit32.band(mtState.mt[i], 0x80000000),
-			bit32.band(mtState.mt[(i % 624) + 1], 0x7FFFFFFF)
-		)
-
-		mtState.mt[i] = bit32.bxor(
-			mtState.mt[(i + 397) % 624 + 1],
-			bit32.rshift(y, 1)
-		)
-
-		if y % 2 ~= 0 then
-			mtState.mt[i] = bit32.bxor(mtState.mt[i], 0x9908B0DF)
-		end
-	end
-end
-
--- Extract a tempered random number
-local function extractMTNumber()
-	if not mtState.initialized then
-		error("Random generator not initialized. Call mathlib.randomSeed() first.")
-	end
-
-	if mtState.index >= 625 then
-		generateMTNumbers()
-		mtState.index = 1
-	end
-
-	local y = mtState.mt[mtState.index]
-	mtState.index = mtState.index + 1
-
-	-- Tempering
-	y = bit32.bxor(y, bit32.rshift(y, 11))
-	y = bit32.bxor(y, bit32.band(bit32.lshift(y, 7), 0x9D2C5680))
-	y = bit32.bxor(y, bit32.band(bit32.lshift(y, 15), 0xEFC60000))
-	y = bit32.bxor(y, bit32.rshift(y, 18))
-
-	return y % 4294967296
-end
-
---- Mersenne Twister random number generator
---- @param min number|nil Minimum value (optional)
---- @param max number|nil Maximum value (optional)
---- @return number Random value
-function mathlib.random(min, max)
-	local randomValue = extractMTNumber() / 4294967295.0
-
-	if min and max then
-		return min + randomValue * (max - min)
-	elseif min then
-		return randomValue * min
-	else
-		return randomValue
-	end
-end
-
---- Sets seed for the Mersenne Twister generator
---- @param seed number Seed value
-function mathlib.randomSeed(seed)
-	initializeMT(seed)
-end
-
---- Generates a random integer between min and max (inclusive)
---- @param min number Minimum value
---- @param max number Maximum value
---- @return integer Random integer
-function mathlib.randomInt(min, max)
-	return math.floor(mathlib.random(min, max + 0.999999))
-end
-
---- Generates a random boolean value
---- @param probability number Probability of true (default: 0.5)
---- @return boolean Random boolean
-function mathlib.randomBool(probability)
-	probability = probability or 0.5
-	return mathlib.random() < probability
-end
-
---- Selects a random element from an array
---- @param array table Array to select from
---- @return any Random element
-function mathlib.randomChoice(array)
-	if #array == 0 then return nil end
-	return array[mathlib.randomInt(1, #array)]
-end
-
---- Shuffles an array using Fisher-Yates algorithm
---- @param array table Array to shuffle
---- @return table Shuffled array
-function mathlib.shuffle(array)
-	local result = {}
-	for i = 1, #array do result[i] = array[i] end
-
-	for i = #result, 2, -1 do
-		local j = mathlib.randomInt(1, i)
-		result[i], result[j] = result[j], result[i]
-	end
-
-	return result
-end
-
---[[
-    ========================================
-    GEOMETRIC FUNCTIONS
+    GEOMETRIC CALCULATIONS
     ========================================
 ]]--
 
@@ -810,6 +515,37 @@ function mathlib.pointToLineDistance(px, py, x1, y1, x2, y2)
 	return math.sqrt(dx * dx + dy * dy)
 end
 
+--[[
+    ========================================
+    RANDOM NUMBER GENERATION
+    ========================================
+]]--
+
+-- Custom random generator state
+local randomState = os.time()
+
+--- Custom random number generator
+--- @param min number Minimum value
+--- @param max number Maximum value
+--- @return number Random value
+function mathlib.random(min, max)
+	randomState = (randomState * 9301 + 49297) % 233280
+	local randomValue = randomState / 233280.0
+
+	if min and max then
+		return min + randomValue * (max - min)
+	elseif min then
+		return randomValue * min
+	else
+		return randomValue
+	end
+end
+
+--- Sets seed for custom random generator
+--- @param seed number Seed value
+function mathlib.randomSeed(seed)
+	randomState = seed
+end
 
 --- Generates random point on unit circle
 --- @return number X coordinate
@@ -861,11 +597,11 @@ end
 
 --[[
     ========================================
-    EXPORT OF THE LIBRARY 
+    EXPORT LIBRARY
     ========================================
 ]]--
 
-mathlib._VERSION = "2.1.1"
+mathlib._VERSION = "2.1.0"
 mathlib._AUTHOR = ".schlonny"
 mathlib._DESCRIPTION = "Advanced mathematics library for Roblox"
 
