@@ -1,16 +1,16 @@
 name: Discord Notification on Push
 
-on: [push]
+on: 
+  push:
+  workflow_dispatch:
 
 jobs:
   discord-notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Notification
-        uses: Ilshidur/action-discord@0.3.2
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
-          args: |
-            New push to **${{ github.repository }}** by @${{ github.actor }}
-            📝 **Commit:** ${{ github.event.head_commit.message }}
-            🔗 **View changes:** ${{ github.event.compare }}
+      - name: Send to Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{"content": "New push to **${{ github.repository }}** by @${{ github.actor }}\n📝 **Commit:** ${{ github.event.head_commit.message }}\n🔗 **View changes:** ${{ github.event.compare }}"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
