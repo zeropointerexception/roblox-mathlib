@@ -25,7 +25,6 @@
 
 local mathlib = {}
 
-
 --[[
     ========================================
     CONSTANTS & CONFIGURATION
