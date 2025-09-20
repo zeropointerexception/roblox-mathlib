@@ -39,3 +39,39 @@ jobs:
             "content": "**Push Notification**\n\n**Repository:** ${{ github.repository }}\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.time.outputs.current_time }}\n**Day:** ${{ steps.time.outputs.current_day }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}\n\n**Context:**\nThis appears to be ${{ steps.time.outputs.time_context }} activity"
           }' \
           "${{ secrets.DISCORD_WEBHOOK }}"
+
+  mathlib-luau-notification:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/mathlib.luau' }}
+    steps:
+      - name: Get current time in CET
+        id: time
+        run: |
+          export TZ="CET"
+          CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S CET")
+          CURRENT_HOUR=$(date +"%H")
+          CURRENT_DAY=$(date +"%A")
+          
+          echo "current_time=$CURRENT_TIME" >> $GITHUB_OUTPUT
+          echo "current_hour=$CURRENT_HOUR" >> $GITHUB_OUTPUT
+          echo "current_day=$CURRENT_DAY" >> $GITHUB_OUTPUT
+          
+          if [ "$CURRENT_HOUR" -ge 6 ] && [ "$CURRENT_HOUR" -lt 12 ]; then
+            TIME_CONTEXT="morning development"
+          elif [ "$CURRENT_HOUR" -ge 12 ] && [ "$CURRENT_HOUR" -lt 18 ]; then
+            TIME_CONTEXT="afternoon work"
+          elif [ "$CURRENT_HOUR" -ge 18 ] && [ "$CURRENT_HOUR" -lt 22 ]; then
+            TIME_CONTEXT="evening coding"
+          else
+            TIME_CONTEXT="late night work"
+          fi
+          echo "time_context=$TIME_CONTEXT" >> $GITHUB_OUTPUT
+
+      - name: Send mathlib.luau notification
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{
+            "content": "**Mathlib.Luau Push Notification**\n\n**Repository:** ${{ github.repository }}\n**Branch:** mathlib.luau\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.time.outputs.current_time }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}\n\n**Context:**\nMathlib.Luau branch updated during ${{ steps.time.outputs.time_context }}"
+          }' \
+          "${{ secrets.DISCORD_WEBHOOK2 }}"
