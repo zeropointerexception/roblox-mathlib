@@ -67,11 +67,11 @@ jobs:
           fi
           echo "time_context=$TIME_CONTEXT" >> $GITHUB_OUTPUT
 
-      - name: Send mathlib.luau notification
+      - name: mathlib.luau notification
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
           -d '{
-            "content": "**Mathlib.Luau Push Notification**\n\n**Repository:** ${{ github.repository }}\n**Branch:** mathlib.luau\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.time.outputs.current_time }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}\n\n**Context:**\nMathlib.Luau branch updated during ${{ steps.time.outputs.time_context }}"
+            "content": "**Mathlib.Luau Push Notification**\n\n**Repository:** ${{ github.repository }}\n**Branch:** mathlib.luau\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.time.outputs.current_time }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}"
           }' \
           "${{ secrets.DISCORD_WEBHOOK2 }}"
