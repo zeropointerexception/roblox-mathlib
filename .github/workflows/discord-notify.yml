@@ -40,9 +40,10 @@ jobs:
           }' \
           "${{ secrets.DISCORD_WEBHOOK }}"
 
+ 
   mathlib-luau-notification:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/mathlib.luau' }}
+    if: contains(github.ref, 'mathlib')
     steps:
       - name: Get current time in CET
         id: time
@@ -67,11 +68,11 @@ jobs:
           fi
           echo "time_context=$TIME_CONTEXT" >> $GITHUB_OUTPUT
 
-      - name: mathlib.luau notification
+      - name: Send mathlib.luau notification
         run: |
           curl -H "Content-Type: application/json" \
           -X POST \
           -d '{
-            "content": "**Mathlib.Luau Push Notification**\n\n**Repository:** ${{ github.repository }}\n**Branch:** mathlib.luau\n**User:** @${{ github.actor }}\n**Time:** ${{ steps.time.outputs.current_time }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}"
+           "content": "**Mathlib.Luau Push Notification**\n\n**Branch:** ${{ github.ref_name }}\n**User:** @${{ github.actor }}\n\n**Commit Message:** ${{ github.event.head_commit.message }}\n**View Changes:** ${{ github.event.compare }}"
           }' \
           "${{ secrets.DISCORD_WEBHOOK2 }}"
